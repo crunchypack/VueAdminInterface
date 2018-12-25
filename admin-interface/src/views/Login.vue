@@ -30,7 +30,7 @@ export default {
         data: this.input,
         headers: { "content-type": "application/json" }
       }).then(res => {
-        this.loginres = res.data.user.email;
+        this.loginres = res.data;
         this.$emit("authenticated", true);
         this.$router.replace({ name: "logged" });
       });
