@@ -3,12 +3,24 @@
     <h1>Welcome admin</h1>
     <h2>Add movies to the database</h2>
     <b-container fluid>
-      <b-row class="my-1" v-for="details in items" :key="details">
+      <b-row class="my-1" v-for="(details,index) in items" :key="details">
         <b-col sm="3">
           <label :for="`details-${details}`">{{details.charAt(0).toUpperCase() + details.slice(1)}}:</label>
         </b-col>
         <b-col sm="3">
-          <b-form-input :id="`details-${details}`" type="text" v-model="addMovie[details]"></b-form-input>
+          <b-form-textarea
+            v-if="details == 'desc'"
+            :id="`details-${details}`"
+            :type="`${types[index]}`"
+            v-model="addMovie[details]"
+            :rows="4"
+          ></b-form-textarea>
+          <b-form-input
+            v-else
+            :id="`details-${details}`"
+            :type="`${types[index]}`"
+            v-model="addMovie[details]"
+          ></b-form-input>
         </b-col>
       </b-row>
       <b-row>
@@ -16,7 +28,7 @@
           <label>Genre</label>
         </b-col>
         <b-col sm="3">
-          <b-form-select multiple :select-size="5" v-model="addMovie.genre" :options="genres"></b-form-select>
+          <b-form-select multiple :select-size="7" v-model="addMovie.genre" :options="genres"></b-form-select>
         </b-col>
       </b-row>
     </b-container>
@@ -60,7 +72,20 @@
         ></b-form-checkbox-group>
       </b-form-group>
     </div>
-    <button @click="add()">Add Movie</button>
+    <b-btn
+      :size="'lg'"
+      :variant="'success'"
+      :disabled="updateMovie"
+      v-if="isFilled"
+      @click="add()"
+    >Add Movie</b-btn>
+    <b-btn
+      v-if="updateMovie"
+      :size="'lg'"
+      :variant="'success'"
+      :disabled="!updateMovie"
+      @click="upMovie(updateID)"
+    >Update Movie</b-btn>
     <p class="big">{{addedRes}}</p>
 
     <h2>Movies in database</h2>
@@ -68,18 +93,8 @@
       <a v-bind:href="movie.url" target="_blank">
         <h3>{{movie.title}}</h3>
       </a>
-      <!-- <p>
-        Genre:
-        <span v-for="(genre, index) in movie.genre" :key="index">{{genre}}</span>
-      </p>
-      <p>
-        Cast:
-        <span v-for="(actor, index) in movie.starring" :key="index">{{actor}}</span>
-      </p>
-      <p>Year: {{movie.year}}</p>
-      <p>Director: {{movie.director}}</p>
-      <p>length: {{movie.length}} minutes</p>
-      <p>{{movie.desc}}</p>-->
+      <b-button :size="' '" :variant="'warning'" @click="getData(movie._id)">Update</b-button>
+      <b-button :size="' '" :variant="'danger'" @click="deleteItem(movie._id)">Remove</b-button>
     </div>
   </div>
 </template>
@@ -120,6 +135,7 @@ export default {
       castLines: [],
       blockCast: true,
       items: ["title", "desc", "year", "length", "director", "url"],
+      types: ["text", "text", "number", "number", "text", "text"],
       addMovie: {
         title: "",
         year: "",
@@ -131,6 +147,8 @@ export default {
         available: [],
         url: ""
       },
+      updateMovie: false,
+      updateID: null,
       movies: null,
       addedRes: null,
       errors: null
@@ -141,18 +159,21 @@ export default {
       this.blockCast = this.addMovie.starring.length <= 1;
     }
   },
+  computed: {
+    isFilled: function() {
+      if (this.addMovie.title != "" && this.addMovie.title.length >= 3)
+        return true;
+      return false;
+    }
+  },
   mounted() {
-    axios({ method: "GET", url: "https://lobonode.ddns.net/api" })
-      .then(response => (this.movies = response.data))
-      .catch(e => {
-        this.errors.push(e);
-      });
+    this.reloadMovies();
     this.addCast(0);
   },
   methods: {
     addCast(id) {
       let checkGen = this.addMovie.starring[id];
-      if (checkGen == " " && this.addMovie.starring.length > 0) {
+      if (checkGen == "" && this.addMovie.starring.length > 0) {
         return;
       }
       this.addMovie.starring.push("");
@@ -178,8 +199,62 @@ export default {
         })
         .catch(e => {
           this.errors.push(e);
-          console.log(errors);
         });
+    },
+    upMovie(id) {
+      axios({
+        method: "PUT",
+        url: "https://lobonode.ddns.net/api/update/" + id,
+        data: this.addMovie,
+        headers: { "content-type": "application/json" }
+      }).then(result => {
+        this.addedRes = result.data.message;
+
+        this.updateID = null;
+        this.updateMovie = false;
+
+        this.clearObjects();
+        this.reloadMovies();
+      });
+    },
+    deleteItem(id) {
+      let deleteMovie = confirm("Are you sure?");
+      if (deleteMovie) {
+        axios({
+          method: "DELETE",
+          url: "https://lobonode.ddns.net/api/delete/" + id,
+          headers: { "content-type": "application/json" }
+        })
+          .then(result => {
+            this.addedRes = result.data.message;
+            this.reloadMovies();
+          })
+          .catch(e => {
+            this.errors.push(e);
+          });
+      }
+    },
+    getData(id) {
+      axios({
+        method: "GET",
+        url: "https://lobonode.ddns.net/api/movie/" + id,
+        headers: { "content-type": "application/json" }
+      }).then(result => {
+        let movie = result.data;
+        this.addMovie.title = movie.title;
+        this.addMovie.year = movie.year;
+        this.addMovie.length = movie.length;
+        this.addMovie.desc = movie.desc;
+        this.addMovie.director = movie.director;
+        this.addMovie.genre = movie.genre;
+        this.addMovie.starring = movie.starring;
+        this.addMovie.available = movie.available;
+        this.addMovie.url = movie.url;
+        this.updateID = movie._id;
+        this.updateMovie = true;
+        this.castLines = movie.starring;
+        window.scrollTo(0, 0);
+      });
     },
     clearObjects() {
       this.addMovie.title = " ";
