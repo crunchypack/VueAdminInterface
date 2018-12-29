@@ -87,9 +87,18 @@
       @click="upMovie(updateID)"
     >Update Movie</b-btn>
     <p class="big">{{addedRes}}</p>
-
+    <b-container fluid>
+      <b-row>
+        <b-col sm="3">
+          <label class="big">Search Movies</label>
+        </b-col>
+        <b-col sm="6">
+          <b-form-input type="text" v-model="search" placeholder="Enter title"></b-form-input>
+        </b-col>
+      </b-row>
+    </b-container>
     <h2>Movies in database</h2>
-    <div v-for="(movie, indx) in movies" :key="indx">
+    <div v-for="(movie, indx) in searchMovies" :key="indx">
       <a v-bind:href="movie.url" target="_blank">
         <h3>{{movie.title}}</h3>
       </a>
@@ -149,9 +158,10 @@ export default {
       },
       updateMovie: false,
       updateID: null,
-      movies: null,
+      movies: [],
       addedRes: null,
-      errors: null
+      errors: null,
+      search: ""
     };
   },
   watch: {
@@ -164,6 +174,12 @@ export default {
       if (this.addMovie.title != "" && this.addMovie.title.length >= 3)
         return true;
       return false;
+    },
+    searchMovies: function() {
+      let filter = new RegExp(this.search, "i");
+      return this.movies.filter(movie => {
+        return movie.title.match(filter);
+      });
     }
   },
   mounted() {
