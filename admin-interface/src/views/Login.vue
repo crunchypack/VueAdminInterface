@@ -24,7 +24,7 @@
         </b-col>
       </b-row>
     </b-container>
-    <br>
+    <p>{{failed}}</p>
     <br>
   </div>
 </template>
@@ -41,7 +41,8 @@ export default {
       errors: null,
       loginres: null,
       logged: false,
-      status: ""
+      status: "",
+      failed: ""
     };
   },
   mounted() {
@@ -71,11 +72,15 @@ export default {
         url: "https://lobonode.ddns.net/api/login",
         data: this.input,
         headers: { "content-type": "application/json" }
-      }).then(res => {
-        this.loginres = res.data.status;
-        this.$emit("authenticated", true);
-        this.$router.replace({ name: "logged" });
-      });
+      })
+        .then(res => {
+          this.loginres = res.data.status;
+          this.$emit("authenticated", true);
+          this.$router.replace({ name: "logged" });
+        })
+        .catch(err => {
+          this.failed = "Wrong email and/or password";
+        });
     }
   }
 };
