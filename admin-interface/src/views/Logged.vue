@@ -183,6 +183,7 @@ export default {
     }
   },
   mounted() {
+    this.genres.sort();
     this.reloadMovies();
     this.addCast(0);
   },

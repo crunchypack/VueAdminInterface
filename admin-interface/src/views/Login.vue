@@ -79,6 +79,7 @@ export default {
           this.$router.replace({ name: "logged" });
         })
         .catch(err => {
+          this.status = err;
           this.failed = "Wrong email and/or password";
         });
     }
