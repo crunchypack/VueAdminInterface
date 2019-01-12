@@ -122,6 +122,7 @@ export default {
         "Comedy",
         "Crime",
         "Drama",
+        "Documentary",
         "Historical",
         "Horror",
         "Musical",
