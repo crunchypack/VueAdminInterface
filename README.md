@@ -1,5 +1,5 @@
 # VueAdminInterface
-Webbsida som kopplar upp sig mot webbtjänster för att visa lista av filmer. Sidan är skriven med hjälp av Vue.js
+Webbsida som används för att lägga till filmer i en databas med hjälp av en webbtjänst
 ## Paket
 ### Axios
 Paket som används för att göra AJAX begäran
