@@ -126,6 +126,7 @@ export default {
         "Historical",
         "Horror",
         "Musical",
+        "Mystery",
         "Science Fiction",
         "War",
         "Western",
@@ -245,6 +246,7 @@ export default {
         })
           .then(result => {
             this.addedRes = result.data.message;
+            this.clearObjects();
             this.reloadMovies();
           })
           .catch(e => {
@@ -275,15 +277,15 @@ export default {
       });
     },
     clearObjects() {
-      this.addMovie.title = " ";
-      this.addMovie.year = " ";
-      this.addMovie.length = " ";
-      this.addMovie.desc = " ";
-      this.addMovie.director = " ";
+      this.addMovie.title = "";
+      this.addMovie.year = "";
+      this.addMovie.length = "";
+      this.addMovie.desc = "";
+      this.addMovie.director = "";
       this.addMovie.genre = [];
       this.addMovie.starring = [];
       this.addMovie.available = [];
-      this.addMovie.url = " ";
+      this.addMovie.url = "";
       this.castLines = [];
       this.addCast(0);
     },
