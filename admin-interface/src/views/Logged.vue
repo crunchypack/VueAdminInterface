@@ -290,7 +290,7 @@ export default {
       this.addCast(0);
     },
     reloadMovies() {
-      axios({ method: "GET", url: "https://lobonode.ddns.net/api" })
+      axios({ method: "GET", url: "https://lobonode.ddns.net/api/_id/-1" })
         .then(response => (this.movies = response.data))
         .catch(e => {
           this.errors.push(e);
